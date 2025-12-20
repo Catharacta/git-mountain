@@ -16,8 +16,10 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-gpu',
-      '--use-gl=angle',
-      '--use-angle=vulkan'
+      '--use-gl=swiftshader',
+      '--enable-webgl',
+      '--hide-scrollbars',
+      '--mute-audio'
     ],
     headless: "new"
   });

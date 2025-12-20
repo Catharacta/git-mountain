@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Generate Mountain
-        run: node scripts/main.js
+        run: xvfb-run node scripts/main.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
