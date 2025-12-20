@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Generate Mountain
-        run: xvfb-run -s "-screen 0 1280x1024x24" node scripts/main.js
+        run: node scripts/main.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
