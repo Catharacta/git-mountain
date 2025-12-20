@@ -33,6 +33,8 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
   });
 
   // 必要なスクリプトの読み込み
+  const threePath = path.join(path.dirname(require.resolve('three')), 'three.min.js');
+  const threeJsContent = fs.readFileSync(threePath, 'utf8');
   const sceneJsContent = fs.readFileSync(path.join(__dirname, 'scene.js'), 'utf8');
 
   // HTML コンテンツの作成
@@ -43,9 +45,9 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
         <style>
           body { margin: 0; overflow: hidden; background: #0a0a0a; }
         </style>
-        <script src="https://unpkg.com/three@0.182.0/build/three.min.js"></script>
       </head>
       <body>
+        <script>${threeJsContent}</script>
         <script>
           window.MOUNTAIN_DATA = ${JSON.stringify(data)};
           window.MOUNTAIN_CONFIG = ${JSON.stringify(config)};
