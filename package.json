@@ -8,5 +8,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@octokit/graphql": "^9.0.3",
+    "js-yaml": "^4.1.1",
+    "puppeteer": "^24.34.0",
+    "sharp": "^0.34.5",
+    "three": "^0.182.0"
+  }
 }
