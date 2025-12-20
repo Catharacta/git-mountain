@@ -7,6 +7,5 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 .vscode
-assets/*.webp
-assets/*.png
+# assets 以下の画像は成果物としてコミットするため除外しない
 temp
