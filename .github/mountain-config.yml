@@ -1,0 +1,23 @@
+user: "Catharacta"
+period:
+  mode: "past_year" # past_year | last_n_days | custom
+  last_n_days: 365
+season:
+  hemisphere: "north"
+  mode: "meteorological"
+  transitionDays: 14
+color:
+  spring: ["#A8E6CF", "#56C596", "#2D8F6F"]
+  summer: ["#FFD86B", "#FFB347", "#FF6F3C"]
+  autumn: ["#FFB88C", "#D97904", "#7A3B1E"]
+  winter: ["#E6F0FF", "#A7C2FF", "#6078D8"]
+  ridgeColor: "#FFFFFF"
+render:
+  width: 1200
+  height: 700
+  format: "webp"
+  scale: "linear"
+  maxHeightUnits: 40
+output:
+  path: "assets/contrib-mountain.webp"
+  commitIfChanged: true
