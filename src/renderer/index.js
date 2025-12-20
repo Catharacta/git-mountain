@@ -75,8 +75,12 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
   }, data, config, seasonTitle);
 
   // ライブラリとスクリプトを順次読み込み (Puppeteer がロード完了を待機する)
-  console.log("Loading Three.js from CDN...");
-  await page.addScriptTag({ url: 'https://unpkg.com/three@0.170.0/build/three.min.js' });
+  console.log("Loading Three.js from local node_modules...");
+  const threePath = path.join(process.cwd(), 'node_modules', 'three', 'build', 'three.min.js');
+  if (!fs.existsSync(threePath)) {
+    throw new Error(`Three.js not found at ${threePath}`);
+  }
+  await page.addScriptTag({ path: threePath });
 
   console.log("Loading scene.js...");
   await page.addScriptTag({ path: path.join(__dirname, 'scene.js') });
