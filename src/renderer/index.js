@@ -11,37 +11,36 @@ const path = require('path');
  * @returns {Promise<string>} 生成された画像のパス
  */
 async function renderMountain(data, config, seasonTitle, getColorFn) {
-    const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        headless: "new"
-    });
-    const page = await browser.newPage();
-    await page.setViewport({
-        width: config.render.width,
-        height: config.render.height
-    });
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: "new"
+  });
+  const page = await browser.newPage();
+  await page.setViewport({
+    width: config.render.width,
+    height: config.render.height
+  });
 
-    // 必要なライブラリとスクリプトの読み込み
-    const threeJsContent = fs.readFileSync(require.resolve('three/build/three.min.js'), 'utf8');
-    const sceneJsContent = fs.readFileSync(path.join(__dirname, 'scene.js'), 'utf8');
+  // 必要なスクリプトの読み込み
+  const sceneJsContent = fs.readFileSync(path.join(__dirname, 'scene.js'), 'utf8');
 
-    // HTML コンテンツの作成
-    const html = `
+  // HTML コンテンツの作成
+  const html = `
     <!DOCTYPE html>
     <html>
       <head>
         <style>
           body { margin: 0; overflow: hidden; background: #0a0a0a; }
         </style>
+        <script src="https://unpkg.com/three@0.182.0/build/three.min.js"></script>
       </head>
       <body>
-        <script>${threeJsContent}</script>
         <script>
           window.MOUNTAIN_DATA = ${JSON.stringify(data)};
           window.MOUNTAIN_CONFIG = ${JSON.stringify(config)};
           window.getColorForHeight = (x) => {
             const palette = ${JSON.stringify(config.color[seasonTitle])};
-            // 簡易的な補間ロジック（coloring.jsから移行したものを想定）
+            // 簡易的な補間ロジック
             const n = palette.length;
             const s = x * (n - 1);
             const i = Math.floor(s);
@@ -66,16 +65,16 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
     </html>
   `;
 
-    await page.setContent(html);
+  await page.setContent(html);
 
-    // レンダリング完了を待機 (window.RENDER_DONE が true になるまで)
-    await page.waitForFunction('window.RENDER_DONE === true', { timeout: 30000 });
+  // レンダリング完了を待機 (window.RENDER_DONE が true になるまで)
+  await page.waitForFunction('window.RENDER_DONE === true', { timeout: 30000 });
 
-    const tempPath = path.join(process.cwd(), 'temp_mountain.png');
-    await page.screenshot({ path: tempPath, type: 'png' });
+  const tempPath = path.join(process.cwd(), 'temp_mountain.png');
+  await page.screenshot({ path: tempPath, type: 'png' });
 
-    await browser.close();
-    return tempPath;
+  await browser.close();
+  return tempPath;
 }
 
 module.exports = { renderMountain };
