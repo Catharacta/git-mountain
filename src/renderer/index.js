@@ -32,12 +32,7 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
     height: config.render.height
   });
 
-  // 必要なスクリプトの読み込み
-  const threePath = path.join(path.dirname(require.resolve('three')), 'three.min.js');
-  const threeJsContent = fs.readFileSync(threePath, 'utf8');
-  const sceneJsContent = fs.readFileSync(path.join(__dirname, 'scene.js'), 'utf8');
-
-  // HTML コンテンツの作成
+  // HTML コンテンツの作成 (最小限)
   const html = `
     <!DOCTYPE html>
     <html>
@@ -47,40 +42,46 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
         </style>
       </head>
       <body>
-        <script>${threeJsContent}</script>
-        <script>
-          window.MOUNTAIN_DATA = ${JSON.stringify(data)};
-          window.MOUNTAIN_CONFIG = ${JSON.stringify(config)};
-          window.getColorForHeight = (x) => {
-            const palette = ${JSON.stringify(config.color[seasonTitle])};
-            // 簡易的な補間ロジック
-            const n = palette.length;
-            const s = x * (n - 1);
-            const i = Math.floor(s);
-            const t = s - i;
-            const hexToRgb = (hex) => {
-              const res = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex);
-              return res ? { r: parseInt(res[1], 16), g: parseInt(res[2], 16), b: parseInt(res[3], 16) } : null;
-            };
-            const rgbToHex = (rgb) => "#" + ((1 << 24) + (rgb.r << 16) + (rgb.g << 8) + rgb.b).toString(16).slice(1);
-            const lerp = (a, b, t) => a + (b - a) * t;
-            const c1 = hexToRgb(palette[i]);
-            const c2 = hexToRgb(palette[Math.min(i + 1, n - 1)]);
-            return rgbToHex({
-              r: Math.round(lerp(c1.r, c2.r, t)),
-              g: Math.round(lerp(c1.g, c2.g, t)),
-              b: Math.round(lerp(c1.b, c2.b, t))
-            });
-          };
-        </script>
-        <script>${sceneJsContent}</script>
       </body>
     </html>
   `;
 
   await page.setContent(html);
 
-  // レンダリング完了を待機 (window.RENDER_DONE が true になるまで)
+  // データをページにインジェクション
+  await page.evaluate((data, config, seasonTitle) => {
+    window.MOUNTAIN_DATA = data;
+    window.MOUNTAIN_CONFIG = config;
+    window.getColorForHeight = (x) => {
+      const palette = config.color[seasonTitle];
+      const n = palette.length;
+      const s = x * (n - 1);
+      const i = Math.floor(s);
+      const t = s - i;
+      const hexToRgb = (hex) => {
+        const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return res ? { r: parseInt(res[1], 16), g: parseInt(res[2], 16), b: parseInt(res[3], 16) } : null;
+      };
+      const rgbToHex = (rgb) => "#" + ((1 << 24) + (rgb.r << 16) + (rgb.g << 8) + rgb.b).toString(16).slice(1);
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const c1 = hexToRgb(palette[i]);
+      const c2 = hexToRgb(palette[Math.min(i + 1, n - 1)]);
+      return rgbToHex({
+        r: Math.round(lerp(c1.r, c2.r, t)),
+        g: Math.round(lerp(c1.g, c2.g, t)),
+        b: Math.round(lerp(c1.b, c2.b, t))
+      });
+    };
+  }, data, config, seasonTitle);
+
+  // ライブラリとスクリプトを順次読み込み (Puppeteer がロード完了を待機する)
+  console.log("Loading Three.js from CDN...");
+  await page.addScriptTag({ url: 'https://unpkg.com/three@0.170.0/build/three.min.js' });
+
+  console.log("Loading scene.js...");
+  await page.addScriptTag({ path: path.join(__dirname, 'scene.js') });
+
+  // レンダリング完了を待機
   try {
     await page.waitForFunction('window.RENDER_DONE === true', { timeout: 30000 });
   } catch (e) {
