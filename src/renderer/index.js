@@ -16,7 +16,9 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-gpu',
-      '--use-gl=swiftshader',
+      '--use-gl=egl',
+      '--ignore-gpu-blocklist',
+      '--disable-dev-shm-usage',
       '--enable-webgl',
       '--hide-scrollbars',
       '--mute-audio'
