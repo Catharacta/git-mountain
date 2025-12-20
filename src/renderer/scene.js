@@ -78,10 +78,18 @@ function initScenario() {
     scene.add(ground);
 
     function animate() {
+        console.log("Starting WebGL render...");
         renderer.render(scene, camera);
+        console.log("Render finished.");
         window.RENDER_DONE = true;
     }
     animate();
 }
 
-window.onload = initScenario;
+// 実行
+console.log("Script loaded, status:", document.readyState);
+if (document.readyState === 'complete') {
+    initScenario();
+} else {
+    window.addEventListener('load', initScenario);
+}

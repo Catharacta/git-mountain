@@ -12,10 +12,21 @@ const path = require('path');
  */
 async function renderMountain(data, config, seasonTitle, getColorFn) {
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-gpu',
+      '--use-gl=angle',
+      '--use-angle=vulkan'
+    ],
     headless: "new"
   });
   const page = await browser.newPage();
+
+  // ブラウザのログを表示するように設定
+  page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+  page.on('pageerror', err => console.error('PAGE ERROR:', err.toString()));
+
   await page.setViewport({
     width: config.render.width,
     height: config.render.height
@@ -68,7 +79,14 @@ async function renderMountain(data, config, seasonTitle, getColorFn) {
   await page.setContent(html);
 
   // レンダリング完了を待機 (window.RENDER_DONE が true になるまで)
-  await page.waitForFunction('window.RENDER_DONE === true', { timeout: 30000 });
+  try {
+    await page.waitForFunction('window.RENDER_DONE === true', { timeout: 30000 });
+  } catch (e) {
+    console.error("Timeout waiting for RENDER_DONE. Checking page state...");
+    const metrics = await page.metrics();
+    console.log("Page Metrics:", metrics);
+    throw e;
+  }
 
   const tempPath = path.join(process.cwd(), 'temp_mountain.png');
   await page.screenshot({ path: tempPath, type: 'png' });
